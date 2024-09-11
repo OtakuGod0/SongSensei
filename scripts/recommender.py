@@ -2,7 +2,7 @@ import pandas as pd
 import random
 import sys
 
-df = pd.read_csv("sample.csv")
+df = pd.read_csv("sample.csv") # file needs to be changed no longer available 
 
 def recommend(*songs):
     recommended_songs = []
