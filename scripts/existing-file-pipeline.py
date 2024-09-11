@@ -1,53 +1,84 @@
 # extracts audio features from existing dataset
 import os, sys; sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))) # changing to root directery
 import pandas as pd 
-from config.config import audio_features # for standardizing data
+from config.config import features # for standardizing data
 import argparse
 
 def standardize_data(df): 
-    # standardizing data into specific format
-    standard_columns = ['song', 'artist', *audio_features] # unpacking audio features; !!! Do not change the order
-    
-    # possible songs and artist alias
-    song_alias = [] # neeeds to be filled
-    artist_alias = [] # needs to be filled
-    
-    # checking for alias and changing to standard form 
-    columns = df.columns
+    # nested functions
     def search_columns(aliases, columns): 
         for alias in aliases:
             for column in columns:
-                if alias == column.lower(): 
+                if alias == processStr(column): 
                     return column
         # if alias not found
         return None
-         
-    # searching and standardizing
-    song_column_name = search_columns(song_alias, columns)
-    artist_column_name = search_columns(artist_alias, columns)
     
-    if song_column_name and artist_column_name: 
-        df.rename(columns = {song_column_name: standard_columns[0], artist_column_name:  standard_columns[1]}, inplace = True)
-    
-    # handling if song or artist not found 
-    else:
-        if not song_column_name: 
-            print("song column not found")
-        if not artist_column_name:
-            print("artist column not found")
+    # processing string for search
+    def processStr(strings): # expecting strings to be list or string
+        # str processing
+        def process(string): 
+            # lowering string
+            string = string.lower()
             
-        exit(1)
+            # replacing white space with _
+            string = string.replace(" ", "_")
+            
+            # return process data
+            return string
+            
+        # iterate if given argument is list
+        if isinstance(strings, list): 
+            output = []
+            for string in strings: 
+                output.append(process(string))
+                
+            return output # returning list of processed string if list passed
+        
+        # if not list return processed string
+        elif isinstance(strings, str): 
+            return process(strings)
+        
+        else: 
+            print("List or string must be passed")
+            exit(1)
     
+    # function to search for alias and rename column with standard
+    def search_rename(aliases, columns, standard): 
+        # searching and standardizing
+        # search_columns return alias used and returns none if nothing found
+        column_name = search_columns(aliases, columns)
+
+        if column_name: 
+            df.rename(columns = {column_name: standard}, inplace = True)
+
+        # handling if song or artist not found 
+        else:
+            print(f"No alias of {standard} column found")
+            exit(1)
+
+
+    # standardizing data into specific format
+    
+    # possible features alias
+    song_alias = processStr([]) # neeeds to be filled
+    artist_alias = processStr([]) # needs to be filled
+    
+    # checking for alias and changing to standard form 
+    columns = df.columns   
+    # searching and standardizing
+    search_rename(song_alias, columns, features[0]) # search_columns return alias used and returns none if nothing found
+    search_rename(artist_alias, columns, features[1])
             
     # selecting only standard columns
     try: 
-        df = df[standard_columns]
+        df = df[features]
     
     except KeyError:
         # handling missing standard columns
         print("Following standard columns was not found in the dataset: ")
         columns = df.columns
-        print(set(standard_columns) - set(columns))
+        print(set(features) - set(columns))
         
         # choosing song and artsit only
         print("choosing song and artsit only") 

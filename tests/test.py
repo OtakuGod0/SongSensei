@@ -1,7 +1,10 @@
-import numpy as np 
+import os
+import pandas as pd
 
-x = set(np.array([1, 2, 3]))
-y = set(np.array([2, 3]))
+datas = [data for data in os.listdir('data/raw') if data.endswith('.csv')]
 
-print(x - y)
-
+for data in datas: 
+    data = os.path.join('data/raw', data)
+    df = pd.read_csv(data)
+    print(df.columns)
+    
