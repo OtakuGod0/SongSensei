@@ -1,2 +1,3 @@
 data/*
 .spotify_cache
+config/api.py
